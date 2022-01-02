@@ -169,6 +169,8 @@ pub trait Params: Sealed {
 // Explicitly impl for empty array. Critically, for `conn.execute([])` to be
 // unambiguous, this must be the *only* implementation for an empty array. This
 // avoids `NO_PARAMS` being a necessary part of the API.
+
+/*
 impl Sealed for [&(dyn ToSql + Send + Sync); 0] {}
 impl Params for [&(dyn ToSql + Send + Sync); 0] {
     #[inline]
@@ -229,6 +231,29 @@ impl_for_array_ref!(
     1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
     18 19 20 21 22 23 24 25 26 27 29 30 31 32
 );
+
+*/
+
+impl<T: ToSql + ?Sized, const N: usize> Sealed for &[&T; N] {}
+impl<T: ToSql + ?Sized, const N: usize> Params for &[&T; N] {
+    fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()> {
+        stmt.bind_parameters(self)
+    }
+}
+impl<T: ToSql + ?Sized, const N: usize> Sealed for &[(&str, &T); N] {}
+impl<T: ToSql + ?Sized, const N: usize> Params for &[(&str, &T); N] {
+    fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()> {
+        stmt.bind_parameters_named(self)
+    }
+}
+impl<T: ToSql, const N: usize> Sealed for [T; N] {}
+impl<T: ToSql, const N: usize> Params for [T; N] {
+    #[inline]
+    fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()> {
+        stmt.bind_parameters(&self)
+    }
+}
+
 
 /// Adapter type which allows any iterator over [`ToSql`] values to implement
 /// [`Params`].

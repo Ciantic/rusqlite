@@ -176,7 +176,7 @@ impl Connection {
     {
         let mut query = Sql::new();
         query.push_pragma(schema_name, pragma_name)?;
-        self.query_row(&query, [], f)
+        self.query_row(&query, [] as [&dyn ToSql; 0], f)
     }
 
     /// Query the current rows/values of `pragma_name`.
@@ -195,7 +195,7 @@ impl Connection {
         let mut query = Sql::new();
         query.push_pragma(schema_name, pragma_name)?;
         let mut stmt = self.prepare(&query)?;
-        let mut rows = stmt.query([])?;
+        let mut rows = stmt.query([] as [&dyn ToSql; 0])?;
         while let Some(result_row) = rows.next()? {
             let row = result_row;
             f(row)?;
@@ -232,7 +232,7 @@ impl Connection {
         sql.push_value(&pragma_value)?;
         sql.close_brace();
         let mut stmt = self.prepare(&sql)?;
-        let mut rows = stmt.query([])?;
+        let mut rows = stmt.query([] as [&dyn ToSql; 0])?;
         while let Some(result_row) = rows.next()? {
             let row = result_row;
             f(row)?;
@@ -284,7 +284,7 @@ impl Connection {
         // The two syntaxes yield identical results.
         sql.push_equal_sign();
         sql.push_value(&pragma_value)?;
-        self.query_row(&sql, [], f)
+        self.query_row(&sql, [] as [&dyn ToSql; 0], f)
     }
 }
 
